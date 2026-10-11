@@ -296,8 +296,122 @@ test("raiz declara lint/lint:fix e lint-staged cobre packages/ com eslint+pretti
 		`lint-staged deve cobrir packages/ (padrão atual: "${pattern}")`,
 	);
 	assert.ok(Array.isArray(commands), "comandos de lint-staged devem ser array");
-	assert.ok(commands.includes("eslint --fix"), "lint-staged deve rodar eslint --fix");
+	assert.ok(
+		commands.some((command) => command.startsWith("eslint") && command.includes("--fix")),
+		"lint-staged deve rodar eslint com --fix",
+	);
 	assert.ok(commands.includes("prettier --write"), "lint-staged deve rodar prettier --write");
+});
+
+test("typecheck: raiz orquestra e todo pacote declara tsc --noEmit", () => {
+	const rootPackage = getRootPackage();
+	assert.ok(
+		rootPackage.scripts?.typecheck?.includes('--filter "@ismael1361/*"'),
+		'raiz deve declarar script "typecheck" com --filter "@ismael1361/*"',
+	);
+	for (const { dir, pkg } of getWorkspacePackages()) {
+		assert.equal(
+			pkg.scripts?.typecheck,
+			"tsc --noEmit",
+			`${dir}: defina "typecheck": "tsc --noEmit"`,
+		);
+	}
+});
+
+const NODE_CORE_MODULES = [
+	"net", "crypto", "fs", "os", "path", "http", "https", "stream", "util",
+	"url", "zlib", "dgram", "tls", "events", "child_process", "worker_threads",
+	"readline", "perf_hooks", "assert", "buffer", "string_decoder", "querystring",
+	"punycode", "timers", "v8", "vm", "wasi", "async_hooks", "inspector", "trace_events",
+];
+
+function findNodeCoreImports(dir) {
+	const imported = new Set();
+	const walk = (current) => {
+		for (const entry of readdirSync(current, { withFileTypes: true })) {
+			const full = join(current, entry.name);
+			if (entry.isDirectory()) {
+				if (entry.name !== "node_modules" && entry.name !== "dist") walk(full);
+			} else if (/\.(ts|tsx|mts|cts)$/.test(entry.name)) {
+				const source = readFileSync(full, "utf8");
+				for (const moduleName of NODE_CORE_MODULES) {
+					const pattern = new RegExp(`from\\s+["']node:${moduleName}[\\"']|from\\s+["']${moduleName}[\\"']`);
+					if (pattern.test(source)) imported.add(moduleName);
+				}
+			}
+		}
+	};
+	walk(join(rootDir, dir));
+	return imported;
+}
+
+test("pacotes que importam módulos core do Node declaram @types/node", () => {
+	for (const { dir, pkg } of getWorkspacePackages()) {
+		const coreImports = findNodeCoreImports(dir);
+		if (coreImports.size === 0) continue;
+		const hasNodeTypes =
+			pkg.devDependencies?.["@types/node"] || pkg.dependencies?.["@types/node"];
+		assert.ok(
+			hasNodeTypes,
+			`${dir}: usa módulos core (${[...coreImports].join(", ")}) mas não declara @types/node`,
+		);
+	}
+});
+
+test("tsconfig: todo pacote herda da base central na raiz via extends", () => {
+	const basePath = join(rootDir, "tsconfig.base.json");
+	assert.ok(existsSync(basePath), "tsconfig.base.json ausente na raiz");
+	for (const { dir } of getWorkspacePackages()) {
+		const tsconfigPath = join(rootDir, dir, "tsconfig.json");
+		assert.ok(existsSync(tsconfigPath), `${dir}/tsconfig.json ausente`);
+		const config = readJson(tsconfigPath);
+		assert.equal(
+			config.extends,
+			"../../tsconfig.base.json",
+			`${dir}/tsconfig.json deve herdar via extends "../../tsconfig.base.json"`,
+		);
+	}
+});
+
+test("tsconfig.base.json não declara opções relativas a caminho", () => {
+	const config = readJson(join(rootDir, "tsconfig.base.json"));
+	for (const field of [
+		"outDir",
+		"rootDir",
+		"declarationDir",
+		"baseUrl",
+		"paths",
+		"include",
+		"exclude",
+		"files",
+	]) {
+		const holder = field === "include" || field === "exclude" || field === "files" ? config : config.compilerOptions;
+		assert.equal(
+			holder?.[field],
+			undefined,
+			`tsconfig.base.json não deve declarar "${field}" (é relativo a cada pacote)`,
+		);
+	}
+});
+
+test("rollup: configs dos pacotes delegam ao factory central rollup.base.js", () => {
+	const basePath = join(rootDir, "rollup.base.js");
+	assert.ok(existsSync(basePath), "rollup.base.js ausente na raiz");
+	const factory = createRequire(import.meta.url)(basePath);
+	assert.equal(typeof factory, "function", "rollup.base.js deve exportar um factory (função)");
+	for (const { dir } of getWorkspacePackages()) {
+		const configPath = join(rootDir, dir, "rollup.config.js");
+		assert.ok(existsSync(configPath), `${dir}/rollup.config.js ausente`);
+		const source = readFileSync(configPath, "utf8");
+		assert.ok(
+			source.includes('require("../../rollup.base.js")'),
+			`${dir}/rollup.config.js deve delegar ao factory central`,
+		);
+		assert.ok(
+			!source.includes("@rollup/plugin-"),
+			`${dir}/rollup.config.js não deve importar plugins @rollup diretamente (vivem no factory)`,
+		);
+	}
 });
 
 test("eslint: no-explicit-any efetiva como warn em arquivos TS", () => {

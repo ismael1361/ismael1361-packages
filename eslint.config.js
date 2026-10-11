@@ -41,6 +41,7 @@ module.exports = [
 		},
 		rules: {
 			"@typescript-eslint/no-require-imports": "off", // require é idioma nativo destes configs
+			"@typescript-eslint/no-unused-vars": "off",
 		},
 	},
 	{

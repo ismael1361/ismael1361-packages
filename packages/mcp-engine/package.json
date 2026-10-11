@@ -21,6 +21,7 @@
 		"build:types": "tsc --emitDeclarationOnly --declaration --outDir dist/types",
 		"build:bundles": "rollup -c --bundleConfigAsCjs",
 		"dev": "rollup -c --bundleConfigAsCjs -w",
+		"typecheck": "tsc --noEmit",
 		"test": "jest",
 		"test:watch": "jest --watchAll",
 		"prepublishOnly": "bun run build && bun run test",

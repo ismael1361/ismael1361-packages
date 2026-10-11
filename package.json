@@ -22,16 +22,19 @@
 		"format:check": "prettier --check \"packages/*/src/**/*.{ts,tsx}\"",
 		"lint": "eslint \"packages/*/src/**/*.{ts,tsx,js,jsx}\" --quiet",
 		"lint:fix": "eslint \"packages/*/src/**/*.{ts,tsx,js,jsx}\" --quiet --fix",
+		"typecheck": "bun run --filter \"@ismael1361/*\" typecheck",
 		"prepare": "husky"
 	},
 	"lint-staged": {
-		"packages/**/*.{ts,tsx,js,mjs}": [
+		"packages/*/src/**/*.{ts,tsx,js,mjs}": [
 			"eslint --quiet --fix",
 			"prettier --write"
 		]
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
+		"@ismael1361/work-daemon": "./packages/work-daemon",
+		"@types/node": "^26.6.5",
 		"eslint": "^10.12.0",
 		"eslint-config-prettier": "^10.1.8",
 		"globals": "^17.13.0",
@@ -39,8 +42,5 @@
 		"lint-staged": "^17.6.0",
 		"prettier": "^3.9.10",
 		"typescript-eslint": "^8.71.1"
-	},
-	"dependencies": {
-		"@types/node": "^26.6.5"
 	}
 }

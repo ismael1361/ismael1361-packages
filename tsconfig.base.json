@@ -1,0 +1,24 @@
+{
+    "compilerOptions": {
+        "types": [
+            "node",
+            "jest"
+        ],
+        "module": "esnext",
+        "moduleResolution": "bundler",
+        "target": "es6",
+        "strict": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "noEmit": false,
+        "declaration": true,
+        "declarationMap": true,
+        "sourceMap": true,
+        "importHelpers": true,
+        "allowJs": true
+    }
+}

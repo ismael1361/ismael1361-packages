@@ -24,6 +24,7 @@
 		"build:types": "tsc --emitDeclarationOnly --declaration --outDir dist/types",
 		"build:bundles": "rollup -c --bundleConfigAsCjs",
 		"dev": "rollup -c --bundleConfigAsCjs -w",
+		"typecheck": "tsc --noEmit",
 		"prepublishOnly": "bun run build",
 		"release": "bun publish"
 	},
