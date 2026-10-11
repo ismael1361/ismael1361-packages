@@ -1,0 +1,46 @@
+{
+	"name": "ismael1361-packages",
+	"private": true,
+	"workspaces": [
+		"packages/*"
+	],
+	"scripts": {
+		"build": "bun run --workspaces build",
+		"test": "bun run test:repo && bun run --filter \"@ismael1361/*\" test",
+		"test:repo": "node --test \"test/**/*.test.mjs\"",
+		"dev": "bun run --filter \"@ismael1361/*\" dev",
+		"publish:all": "bun run --filter \"@ismael1361/*\" release",
+		"publish:animation": "bun --filter \"@ismael1361/animation\" release",
+		"publish:env-secure": "bun --filter \"@ismael1361/env-secure\" release",
+		"publish:mcp-engine": "bun --filter \"@ismael1361/mcp-engine\" release",
+		"publish:react-use": "bun --filter \"@ismael1361/react-use\" release",
+		"publish:router": "bun --filter \"@ismael1361/router\" release",
+		"publish:utils": "bun --filter \"@ismael1361/utils\" release",
+		"publish:vps-manager": "bun --filter \"@ismael1361/vps-manager\" release",
+		"publish:work-daemon": "bun --filter \"@ismael1361/work-daemon\" release",
+		"format": "prettier --write \"packages/*/src/**/*.{ts,tsx}\"",
+		"format:check": "prettier --check \"packages/*/src/**/*.{ts,tsx}\"",
+		"lint": "eslint \"packages/*/src/**/*.{ts,tsx,js,jsx}\" --quiet",
+		"lint:fix": "eslint \"packages/*/src/**/*.{ts,tsx,js,jsx}\" --quiet --fix",
+		"prepare": "husky"
+	},
+	"lint-staged": {
+		"packages/**/*.{ts,tsx,js,mjs}": [
+			"eslint --quiet --fix",
+			"prettier --write"
+		]
+	},
+	"devDependencies": {
+		"@eslint/js": "^10.0.1",
+		"eslint": "^10.12.0",
+		"eslint-config-prettier": "^10.1.8",
+		"globals": "^17.13.0",
+		"husky": "^9.1.7",
+		"lint-staged": "^17.6.0",
+		"prettier": "^3.9.10",
+		"typescript-eslint": "^8.71.1"
+	},
+	"dependencies": {
+		"@types/node": "^26.6.5"
+	}
+}
